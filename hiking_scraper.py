@@ -118,7 +118,7 @@ class HikingScraper:
         finally:
             await crawler.close()
 
-    async def crawl_websites(self, urls: List[str], max_concurrent: int = 5) -> List[HikingEvent]:
+    async def crawl_websites(self, urls: List[str], max_concurrent: int = 20) -> List[HikingEvent]:
         """Crawl multiple websites in parallel"""
         semaphore = asyncio.Semaphore(max_concurrent)
         all_events = []
