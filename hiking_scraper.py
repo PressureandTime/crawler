@@ -34,12 +34,20 @@ class HikingScraper:
         - Description should be at least 20 characters long
         - Include key details like difficulty level, duration, or special requirements if available
 
+        CRITICAL URL INSTRUCTIONS:
+        - Extract URLs EXACTLY as they appear in the source content
+        - DO NOT modify URLs in any way
+        - DO NOT add any path segments (like /category/ or /product/)
+        - DO NOT add angle brackets or any other characters
+        - If you modify URLs, the links will break and the application will fail
+        - This is the most important instruction - URLs must remain unchanged
+
         Return the results in JSON format with the following fields:
         - title: Event title
         - date: Event date in YYYY-MM-DD format
         - location: Event location, must not be empty
         - description: Event description or summary (minimum 20 characters)
-        - link: Provide the full, direct, and correct URL to the event page without extra characters or symbols, ensuring it is functional and not a 404. Check beforehand if the link is valid and accessible. Dont add anything else to the url.
+        - link: The EXACT URL from the source content, unchanged in any way
         - language: Detect and specify the language as Serbian (sr), Croatian (hr), Slovenian (sl), or English (en) without translating to English.
 
         The response should be a JSON object with an 'events' array containing these fields."""
@@ -66,6 +74,18 @@ class HikingScraper:
                 if not event.get("description") or len(event["description"].strip()) < 20:
                     print(f"Skipping event '{event.get('title')}' due to missing or too short description")
                     continue
+
+                # Clean URL if needed
+                url = event.get("link", "")
+                if url:
+                    # Remove unwanted /category/ segment
+                    if "/category/" in url:
+                        url = url.replace("/category", "")
+                    # Remove angle brackets if present
+                    if "</" in url:
+                        url = url.replace("</", "").replace(">", "")
+                    event["link"] = url
+
                 valid_events.append(event)
 
             return [HikingEvent(**event) for event in valid_events]
