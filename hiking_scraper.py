@@ -27,13 +27,22 @@ class HikingScraper:
         system_prompt = """You are an expert at extracting hiking event information from website content.
         Extract upcoming hiking events including title, date, location, description and link.
         Only extract events that are in the future.
+
+        For descriptions:
+        - Always try to extract a meaningful description
+        - If no explicit description is found, create a brief summary from available event details
+        - Description should be at least 20 characters long
+        - Include key details like difficulty level, duration, or special requirements if available
+
         Return the results in JSON format with the following fields:
         - title: Event title
         - date: Event date in YYYY-MM-DD format
-        - location: Event location
-        - description: Short description
-        - link: Full URL to event
-        - language: Detected language (sr, hr, or en)"""
+        - location: Event location, must not be empty
+        - description: Event description or summary (minimum 20 characters)
+        - link: Provide the full, direct, and correct URL to the event page without extra characters or symbols, ensuring it is functional and not a 404. Check beforehand if the link is valid and accessible. Dont add anything else to the url.
+        - language: Detect and specify the language as Serbian (sr), Croatian (hr), Slovenian (sl), or English (en) without translating to English.
+
+        The response should be a JSON object with an 'events' array containing these fields."""
 
         try:
             response = await self.deepseek_client.chat.completions.create(
@@ -50,7 +59,16 @@ class HikingScraper:
             response_data = json.loads(raw_response)
             print(f"Parsed events data: {response_data}")
             events_data = response_data.get("events", [])
-            return [HikingEvent(**event) for event in events_data]
+
+            # Validate and filter events with empty or too short descriptions
+            valid_events = []
+            for event in events_data:
+                if not event.get("description") or len(event["description"].strip()) < 20:
+                    print(f"Skipping event '{event.get('title')}' due to missing or too short description")
+                    continue
+                valid_events.append(event)
+
+            return [HikingEvent(**event) for event in valid_events]
         except Exception as e:
             print(f"Error extracting events: {e}")
             return []
