@@ -37,14 +37,14 @@ class HikingScraper:
         CRITICAL URL INSTRUCTIONS:
         - Extract URLs EXACTLY as they appear in the source content
         - DO NOT modify URLs in any way
-        - DO NOT add any path segments (like /category/ or /product/)
+        - DO NOT add any path segments that are not part of the URL (like /category/ or /product/)
         - DO NOT add angle brackets or any other characters
         - If you modify URLs, the links will break and the application will fail
         - This is the most important instruction - URLs must remain unchanged
 
         Return the results in JSON format with the following fields:
         - title: Event title
-        - date: Event date in YYYY-MM-DD format
+        - date: Event date in YYYY-MM-DD format, if there are multiple dates, list them all separated by commas
         - location: Event location, must not be empty
         - description: Event description or summary (minimum 20 characters)
         - link: The EXACT URL from the source content, unchanged in any way
